@@ -72,18 +72,26 @@ const CreateCommunityModal: React.FC<CreateCommunityModalProps> = ({
     try {
       const communityDocRef = doc(firestore, "communities", communityName);
 
-      // Check if community exists in db
-      const communityDoc = await getDoc(communityDocRef);
-      if (communityDoc.exists()) {
-        throw new Error(`Sorry, r/${communityName} is taken. Try another.`);
-      }
-
-      //Create community
-      await setDoc(communityDocRef, {
-        creatorId: user?.uid,
-        createdAt: serverTimestamp(),
-        numberofMembers: 1,
-        privacyType: communityType,
+      await runTransaction(firestore, async (transaction) => {
+        const communityDoc = await transaction.get(communityDocRef);
+        if (communityDoc.exists()) {
+          throw new Error(`Sorry, r/${communityName} is taken. Try another.`);
+        }
+        //Create community
+        transaction.set(communityDocRef, {
+          creatorId: user?.uid,
+          createdAt: serverTimestamp(),
+          numberofMembers: 1,
+          privacyType: communityType,
+        });
+        //create communitySnippet on user
+        transaction.set(
+          doc(firestore, `users/${user?.uid}/communitySnippets`, communityName),
+          {
+            communityId: communityName,
+            isModerate: true,
+          }
+        );
       });
     } catch (error: any) {
       console.log("handleCreateCommunity error", error);
