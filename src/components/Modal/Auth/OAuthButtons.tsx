@@ -21,6 +21,7 @@ const OAuthButtons: React.FC = () => {
   useEffect(() => {
     if (userCred) {
       createUserDocument(userCred.user);
+      console.log("oAuthbutton;, userCred", userCred);
     }
   }, [userCred]);
 

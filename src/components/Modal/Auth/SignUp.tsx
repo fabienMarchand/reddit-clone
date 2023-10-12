@@ -51,6 +51,7 @@ const Signup: React.FC<SignUpProps> = () => {
 
   useEffect(() => {
     if (userCred) {
+      console.log("userCred: ", userCred);
       createUserDocument(userCred.user);
     }
   }, [userCred]);
